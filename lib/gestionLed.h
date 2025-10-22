@@ -2,6 +2,7 @@
 #define GESTION_LED_H
 
 #include <cstdint>
+#include <Arduino.h>
 // ajouter librairie chainableLED
 
 enum mode {
