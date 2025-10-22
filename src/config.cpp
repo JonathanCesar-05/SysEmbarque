@@ -1,7 +1,7 @@
 #include <EEPROM.h>
 #include <Arduino.h>
 #include <time.h>
-#include "config.h"
+#include "../lib/config.h"
 
 // Recharge les paramètres enregistrés ou démarre avec des valeurs par défaut
 void loadConfig() {
