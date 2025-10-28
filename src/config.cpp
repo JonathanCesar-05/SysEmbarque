@@ -1,115 +1,50 @@
-#include <EEPROM.h>
-#include <Arduino.h>
-#include <time.h>
 #include "../lib/config.h"
 
-// Recharge les paramètres enregistrés ou démarre avec des valeurs par défaut
-void loadConfig() {
-  EEPROM.get(0, cfg);
-  if (cfg.version == 0xFFFF || cfg.version == 0) { // si EEPROM vide ou non initialisée
-    cfg.logInterval = 10;
-    cfg.timeout = 5;
-    cfg.fileMaxSize = 100;
-    cfg.version = 1;
-    EEPROM.put(0, cfg);
-  }
+void reset_parameters(config_s cfg) {
+  cfg.LOG_INTERVAL = 600000;
+  cfg.FILE_MAX_SIZE = 4096;
+  cfg.TIMEOUT = 30;
+  cfg.LUMIN = 1;
+  cfg.LUMIN_LOW = 255;
+  cfg.LUMIN_HIGH = 768;
+  cfg.TEMP_AIR = 1;
+  cfg.MIN_TEMP_AIR = -10;
+  cfg.MAX_TEMP_AIR = 60;
+  cfg.HYGR = 1;
+  cfg.HYGR_MINT = 0;
+  cfg.HYGR_MAXT = 50;
+  cfg.PRESSURE = 1;
+  cfg.PRESSURE_MIN = 850;
+  cfg.PRESSURE_MAX = 1030;
 }
 
-// Sauvegarde des modifications dans l’EEPROM
-void saveConfig() {
-  cfg.version++;
-  EEPROM.put(0, cfg);
-  Serial.println(F("Paramètres sauvegardés !"));
-}
+void SerialInput(String input, config_s cfg) {
+  input.trim(); // Remove spaces or backline
 
-// Affiche le menu texte
-void printMenu() {
-  Serial.println();
-  Serial.println(F("=== MODE CONFIGURATION ==="));
-  Serial.println(F("1. Changer LOG_INTERVAL"));
-  Serial.println(F("2. Changer TIMEOUT"));
-  Serial.println(F("3. Changer FILE_MAX_SIZE"));
-  Serial.println(F("4. Afficher les paramètres"));
-  Serial.println(F("5. Réinitialiser par défaut"));
-  Serial.println(F("6. Quitter configuration"));
-  Serial.print(F("> Votre choix : "));
-}
-
-// Affiche les valeurs actuelles des paramètres
-void showConfig() {
-  Serial.println();
-  Serial.println(F("--- Paramètres actuels ---"));
-  Serial.print(F("LOG_INTERVAL : ")); Serial.println(cfg.logInterval);
-  Serial.print(F("TIMEOUT      : ")); Serial.println(cfg.timeout);
-  Serial.print(F("FILE_MAX_SIZE: ")); Serial.println(cfg.fileMaxSize);
-  Serial.print(F("VERSION      : ")); Serial.println(cfg.version);
-}
-
-// Fonction principale du mode configuration
-void modeConfiguration() {
-  Serial.println(F("Entrée dans le mode CONFIGURATION"));
-  loadConfig();
-  printMenu();
-  lastActivity = millis();
-
-  while (true) {
-    // Sortie automatique après 30 minutes d’inactivité
-    if (millis() - lastActivity >= CONFIG_TIMEOUT_MS) {
-      Serial.println(F("\nInactivité détectée → retour au mode STANDARD"));
-      break;
-    }
-
-    // Lecture du choix dans le menu
-    if (Serial.available()) {
-      int choix = Serial.parseInt();
-      lastActivity = millis(); // activité détectée => reset du timer
-
-      switch (choix) {
-        case 1:
-          Serial.print(F("Nouvelle valeur LOG_INTERVAL (secondes) : "));
-          while (!Serial.available());
-          cfg.logInterval = Serial.parseInt();
-          saveConfig();
-          break;
-
-        case 2:
-          Serial.print(F("Nouvelle valeur TIMEOUT (secondes) : "));
-          while (!Serial.available());
-          cfg.timeout = Serial.parseInt();
-          saveConfig();
-          break;
-
-        case 3:
-          Serial.print(F("Nouvelle valeur FILE_MAX_SIZE (Ko) : "));
-          while (!Serial.available());
-          cfg.fileMaxSize = Serial.parseInt();
-          saveConfig();
-          break;
-
-        case 4:
-          showConfig();
-          break;
-
-        case 5:
-          Serial.println(F("Réinitialisation des valeurs par défaut..."));
-          cfg.logInterval = 10;
-          cfg.timeout = 5;
-          cfg.fileMaxSize = 100;
-          cfg.version = 1;
-          EEPROM.put(0, cfg);
-          Serial.println(F("Valeurs par défaut remises !"));
-          break;
-
-        case 6:
-          Serial.println(F("Sortie du mode configuration..."));
-          return; // quitte la fonction
-
-        default:
-          Serial.println(F("Choix invalide."));
-          break;
-      }
-
-      printMenu();
-    }
+  if (input.startsWith("LOG_INTERVAL=")) {
+    cfg.LOG_INTERVAL = input.substring(13).toInt();
+    Serial.println(cfg.LOG_INTERVAL);
+  } else if (input.startsWith("FILE_MAX_SIZE=")) {
+    cfg.FILE_MAX_SIZE = input.substring(14).toInt();
+    Serial.println(cfg.FILE_MAX_SIZE);
+  } else if (input == "RESET") {
+    reset_parameters(cfg);
+  } else if (input == "VERSION") {
+    Serial.println(F("Version du programme : X.X, Lot : XXXXX"));
+  } else if (input.startsWith("TIMEOUT=")) {
+    cfg.TIMEOUT = input.substring(8).toInt();
+    Serial.println(cfg.TIMEOUT);
+  } else if (input.startsWith("LUMIN=")) {
+    cfg.LUMIN = input.substring(6).toInt();
+    Serial.println(cfg.LUMIN);
+  } else if (input.startsWith("TEMP_AIR=")) {
+    cfg.TEMP_AIR = input.substring(9).toInt();
+    Serial.println(cfg.TEMP_AIR);
+  } else if (input.startsWith("HYGR=")) {
+    cfg.HYGR = input.substring(5).toInt();
+    Serial.println(cfg.HYGR);
+  } else if (input.startsWith("PRESSURE=")) {
+    cfg.PRESSURE = input.substring(9).toInt();
+    Serial.println(cfg.PRESSURE);
   }
 }
