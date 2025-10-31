@@ -1,36 +1,78 @@
-#include <stdio.h>
 #include "../lib/gestionLed.h"
-#include "../lib/config.h"
+#include "../lib/mode.h"
 
-int modes[2] = {0,0}; //Tableau {cur mode, prev mode}, 0 = standard, 1 = eco, 2 = maintenace
-
-void led_eco() {
-    couleurLed(MODE_ECONOMIQUE);
+void isrVert() {
+  if (digitalRead(BTN_VERT) == LOW) {
+    tpsAppuiVert = millis();
+    appuiVertEnCours = true;
+    changementFaitVert = false;
+  } else {
+    appuiVertEnCours = false;
+    changementFaitVert = false;
+  }
 }
 
-void led_standard() {
-    couleurLed(MODE_STANDARD);
+void isrRouge() {
+  if (digitalRead(BTN_ROUGE) == LOW) {
+    tpsAppuiRouge = millis();
+    appuiRougeEnCours = true;
+    changementFaitRouge = false;
+  } else {
+    appuiRougeEnCours = false;
+    changementFaitRouge = false;
+  }
 }
 
-void led_config() {
-    couleurLed(MODE_CONFIGURATION);
+void initGestionMode() {
+  pinMode(BTN_VERT, INPUT_PULLUP);
+  pinMode(BTN_ROUGE, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BTN_VERT), isrVert, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(BTN_ROUGE), isrRouge, CHANGE);
+  modes[0]=MODE_STANDARD;
+  modes[1]=MODE_STANDARD;
+  couleurLed(MODE_STANDARD);
 }
 
-void led_maintenance() {
-    couleurLed(MODE_MAINTENANCE);
-}
-
-void eco(int *mode) {
-    if (mode[0] == 0) {
-        Serial.println(F("Mode Economique"));
-        mode[1] = mode[0];
-        mode[0] = 1;
-        led_eco();
-    } else if (mode[0] == 1) {
-        Serial.println(F("Mode Standard"));
-        mode[1] = mode[0];
-        mode[0] = 0;
-        led_standard();
+void gestionModes() {
+  // Gestion appui long VERT
+  if(appuiVertEnCours && !changementFaitVert && (millis() - tpsAppuiVert > 5000)) {
+    if(modes[0] == MODE_STANDARD){
+      Serial.println(F("Mode Economique"));
+      modes[1] = modes[0];
+      modes[0] = MODE_ECONOMIQUE;
+      couleurLed(MODE_ECONOMIQUE);
+    } else if (modes[0] == MODE_ECONOMIQUE){
+      Serial.println(F("Mode Standard"));
+      modes[1] = modes[0];
+      modes[0] = MODE_STANDARD;
+      couleurLed(MODE_STANDARD);
     }
+    changementFaitVert = true; // évite de repasser tant que l'appui continue
+  }
+
+  // Gestion appui long ROUGE
+  if(appuiRougeEnCours && !changementFaitRouge && (millis() - tpsAppuiRouge > 5000)) {
+    if (modes[0] != MODE_MAINTENANCE){
+      Serial.println(F("Mode Maintenance"));
+      modes[1] = modes[0];
+      modes[0] = MODE_MAINTENANCE;
+      couleurLed(MODE_MAINTENANCE);
+    } else {
+      Serial.println(F("Retour au mode precedent"));
+      int tmp = modes[0];
+      modes[0] = modes[1];
+      modes[1] = tmp;
+      if(modes[0]==MODE_STANDARD) 
+        couleurLed(MODE_STANDARD);
+      if(modes[0]==MODE_ECONOMIQUE)
+        couleurLed(MODE_ECONOMIQUE);
+    }
+    changementFaitRouge = true;
+  }
 }
 
+void forcerConfig() {
+  modes[1] = modes[0];
+  modes[0] = MODE_CONFIGURATION;
+  couleurLed(MODE_CONFIGURATION);
+}
