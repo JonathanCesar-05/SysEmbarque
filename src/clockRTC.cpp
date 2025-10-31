@@ -23,6 +23,17 @@ void setHeureRTC(int h, int m, int s) {
     Serial.print(h); Serial.print(":"); Serial.print(m); Serial.print(":"); Serial.println(s);
 }
 
+void getDS1307Time(byte *second, byte *minute, byte *hour, byte *day, byte *month, byte *year) {
+    // Suppose que l'objet DS1307 Clock s'appelle "clock", et que clock.getTime() remplit les champs.
+    clock.getTime(); // met à jour les registres internes
+    *second = clock.second;
+    *minute = clock.minute;
+    *hour   = clock.hour;
+    *day    = clock.dayOfMonth;
+    *month  = clock.month;
+    *year   = clock.year+2000;
+}
+
 void printTime() {
     clock.getTime();
     Serial.print(clock.hour, DEC);
