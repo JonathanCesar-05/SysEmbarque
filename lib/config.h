@@ -26,3 +26,4 @@ const unsigned long CONFIG_TIMEOUT_MS = 1800000; // 30 minutes
 
 void reset_parameters(config_s cfg);
 void serial_input(String input, config_s cfg);
+void config();
