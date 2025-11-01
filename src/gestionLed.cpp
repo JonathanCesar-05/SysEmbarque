@@ -1,99 +1,68 @@
 #include "../lib/gestionLed.h"
 
-#define NUM_LEDS  1
+#define NUM_LEDS 1
 
+// ============================================================================
+// Instance globale de la LED chainable (pins 7 et 8)
+// IMPORTANT : Doit être globale pour être accessible dans toutes les fonctions
+// ============================================================================
 ChainableLED led(7, 8, NUM_LEDS);
 
+// ============================================================================
+// Fonction: initialisation_led
+// Description: Initialise la LED chainable et l'éteint au démarrage
+// ============================================================================
 void initialisation_led() {
-    led.init();  // Initialisation de la LED
+    // L'objet led est déjà initialisé par son constructeur
+    // On éteint juste la LED au démarrage
+    led.setColorRGB(0, 0, 0, 0);
+    Serial.println(F("LED initialisee et eteinte."));
 }
 
+// ============================================================================
+// Fonction: allumerCouleur
+// Description: Allume la LED avec une couleur RGB spécifique
+// Paramètres:
+//   - rouge, vert, bleu: Intensité de chaque couleur (0-255)
+// ============================================================================
 void allumerCouleur(uint8_t rouge, uint8_t vert, uint8_t bleu) {
-    led.setColorRGB(0, rouge, vert, bleu);  // Définir les couleurs LED
+    led.setColorRGB(0, rouge, vert, bleu);
 }
 
+// ============================================================================
+// Fonction: eteindreLed
+// Description: Éteint complètement la LED
+// ============================================================================
+void eteindreLed() {
+    led.setColorRGB(0, 0, 0, 0);
+}
+
+// ============================================================================
+// Fonction: couleurLed
+// Description: Change la couleur de la LED selon le mode actuel
+// Paramètres:
+//   - modeActuel: Mode du système (enum mode)
+// ============================================================================
 void couleurLed(uint8_t modeActuel) {
     switch (modeActuel) {
-        case MODE_STANDARD:         // mode standard
-            allumerCouleur(0, 100, 0);  // vert
+        case MODE_STANDARD:
+            allumerCouleur(0, 255, 0);  // Vert
             break;
 
-        case MODE_CONFIGURATION:     // mode configuration
-            allumerCouleur(100, 100, 0);  // jaune
+        case MODE_CONFIGURATION:
+            allumerCouleur(255, 255, 0);  // Jaune
             break;
 
-        case MODE_ECONOMIQUE:        // mode économie
-            allumerCouleur(0, 0, 100);  // bleu
+        case MODE_ECONOMIQUE:
+            allumerCouleur(0, 0, 255);  // Bleu
             break;
 
-        case MODE_MAINTENANCE:       // mode maintenance
-            allumerCouleur(100, 0, 0);  // rouge
+        case MODE_MAINTENANCE:
+            allumerCouleur(255, 0, 0);  // Rouge
             break;
 
         default:
+            eteindreLed();
             break;
-    }
-}
-
-
-void blinkLedWithCoef(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b, int delayTime, uint8_t coef) {
-    led.setColorRGB(ledIndex, r, g, b);  // Allumer la LED avec la couleur spécifiée
-    delay(delayTime * coef);             // Garder la LED allumée selon le coefficient
-    led.setColorRGB(ledIndex, 0, 0, 0);  // Éteindre la LED
-}
-
-void erreurLed(uint8_t nErreur) {
-    int delayTime = 200;  // Durée de base du clignotement en millisecondes
-
-    switch (nErreur)
-    {
-    case ERREUR_RTC:                   // Erreur d'accès à l'horloge RTC
-        // intermittente rouge et bleue
-        while (true) {
-            blinkLedWithCoef(0, 100, 0, 0, delayTime, 1);  // Rouge normal
-            blinkLedWithCoef(0, 0, 0, 100, delayTime, 1);  // Bleu normal
-        }
-        break;
-
-    case ERREUR_GPS:                   // Erreur d’accès aux données du GPS
-        // intermittente rouge et jaune
-        while (true) {
-            blinkLedWithCoef(0, 100, 0, 0, delayTime, 1);  // Rouge normal
-            blinkLedWithCoef(0, 100, 100, 0, delayTime, 1);  // Jaune normal
-        }
-        break;
-
-    case ERREUR_DONNEES_CAPTEUR:         // Erreur accès aux données d’un capteur
-        // intermittente rouge et verte
-        while (true) {
-            blinkLedWithCoef(0, 100, 0, 0, delayTime, 1);  // Rouge normal
-            blinkLedWithCoef(0, 0, 100, 0, delayTime, 1);  // Vert normal
-        }
-        break;
-
-    case ERREUR_DONNEES_INCOHERENTE:       // Données incohérentes - vert 2x plus long
-        while (true) {
-            blinkLedWithCoef(0, 100, 0, 0, delayTime, 1);  // Rouge normal
-            blinkLedWithCoef(0, 0, 100, 0, delayTime, 2);  // Vert avec coef 2
-        }
-        break;
-
-    case ERREUR_SD_PLEINE:               // Carte SD pleine
-        // intermittente rouge et blanche
-        while (true) {
-            blinkLedWithCoef(0, 100, 0, 0, delayTime, 1);  // Rouge normal
-            blinkLedWithCoef(0, 100, 100, 100, delayTime, 1);  // Blanc normal
-        }
-        break;
-
-    case ERREUR_ECRITURE_SD:             // Erreur d'écriture sur la carte SD - blanc 2x plus long
-        while (true) {
-            blinkLedWithCoef(0, 100, 0, 0, delayTime, 1);  // Rouge normal
-            blinkLedWithCoef(0, 100, 100, 100, delayTime, 2);  // Blanc avec coef 2
-        }
-        break;
-
-    default:
-        break;
     }
 }

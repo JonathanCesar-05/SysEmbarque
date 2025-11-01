@@ -1,9 +1,9 @@
 #ifndef GESTION_LED_H
 #define GESTION_LED_H
 
-#include <cstdint>
 #include <Arduino.h>
-// ajouter librairie chainableLED
+#include <ChainableLED.h>
+
 
 enum mode {
     MODE_STANDARD,
@@ -12,22 +12,20 @@ enum mode {
     MODE_MAINTENANCE
 };
 
-enum erreur {
-    ERREUR_RTC,
-    ERREUR_GPS,
-    ERREUR_DONNEES_CAPTEUR,
-    ERREUR_DONNEES_INCOHERENTE,
-    ERREUR_SD_PLEINE,
-    ERREUR_ECRITURE_SD
-};
 
+// Initialise la LED chainable
 void initialisation_led();
-void allumerCouleur(uint8_t rouge, uint8_t vert, uint8_t bleu);
-void couleurLed(uint8_t modeActuel);
-void blinkLedWithCoef(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b, int delayTime, uint8_t coef);
-void erreurLed(uint8_t nErreur);
 
+// Allume la LED avec une couleur RGB spécifique
+void allumerCouleur(uint8_t rouge, uint8_t vert, uint8_t bleu);
+
+// Éteint la LED
+void eteindreLed();
+
+// Change la couleur selon le mode actuel
+void couleurLed(uint8_t modeActuel);
+
+// Variable globale externe (déclarée dans gestionLed.cpp)
 extern ChainableLED led;
-extern int delayTime;
 
 #endif
