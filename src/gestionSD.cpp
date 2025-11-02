@@ -1,18 +1,19 @@
 #include "../lib/gestionSD.h"
 #include "../lib/clock.h" // Pour utiliser le RTC DS1307
 #include "../lib/gestionErreur.h"
-#include <SD.h>
 
 static char nomFichier[20] = "";
 static int revisionCourante = 0;
 static uint32_t tailleMaxFichier = 4096;  // 4 Ko par défaut (configurable)
+
+SdFat SD;  // Instance de gestion SdFat
 
 // ============================================================================
 // Fonction: initialiserCarteSD
 // Description: Initialise la carte SD
 // ============================================================================
 bool initialiserCarteSD(int brocheCS) {
-    if (!SD.begin(brocheCS)) {
+    if (!SD.begin(brocheCS, SPI_HALF_SPEED)) {
         Serial.println(F("Erreur lors de l'initialisation de la carte SD"));
         definirErreur(ERREUR_ECRITURE_SD);
         return false;
@@ -66,11 +67,9 @@ void definirTailleMaxFichier(uint32_t taille) {
 // ============================================================================
 uint32_t obtenirTailleFichierCourant() {
     if (nomFichier[0] == '\0') return 0;
-    
-    File fichier = SD.open(nomFichier, FILE_READ);
-    if (!fichier) return 0;
-    
-    uint32_t taille = fichier.size();
+    SdFile fichier;
+    if (!fichier.open(nomFichier, O_RDONLY)) return 0;
+    uint32_t taille = fichier.fileSize();
     fichier.close();
     return taille;
 }
@@ -112,11 +111,10 @@ bool creerNouveauFichier() {
     } else {
         Serial.print(F("Creation du fichier "));
         Serial.println(nomFichier);
-        
-        File nouveauFichier = SD.open(nomFichier, FILE_WRITE);
-        if (nouveauFichier) {
+        SdFile nouveauFichier;
+        if (nouveauFichier.open(nomFichier, O_RDWR | O_CREAT | O_AT_END)) {
             // Écriture d'un en-tête (optionnel)
-            nouveauFichier.println(F("datetime,temp,pressure,altitude,humidity,light,gps"));
+            nouveauFichier.println("datetime,temp,pressure,altitude,humidity,light,gps");
             nouveauFichier.close();
             Serial.println(F("Fichier correctement cree."));
             return true;
@@ -151,11 +149,9 @@ bool ecrireLigneDonnees(const char* ligneDonnees) {
             return false;
         }
     }
-    
     // Vérifier la taille du fichier actuel
     uint32_t tailleActuelle = obtenirTailleFichierCourant();
     uint32_t tailleLigne = strlen(ligneDonnees) + 2;  // +2 pour \r\n
-    
     // Si ajout de la ligne dépasse la taille max, créer nouveau fichier
     if (tailleActuelle + tailleLigne >= tailleMaxFichier) {
         Serial.println(F("Taille max atteinte, creation nouveau fichier..."));
@@ -164,20 +160,16 @@ bool ecrireLigneDonnees(const char* ligneDonnees) {
             return false;
         }
     }
-    
     // Ouverture du fichier pour écriture
-    File fichier = SD.open(nomFichier, FILE_WRITE);
-    
-    if (!fichier) {
+    SdFile fichier;
+    if (!fichier.open(nomFichier, O_WRITE | O_APPEND)) {
         Serial.println(F("Erreur lors de l'ouverture du fichier."));
         definirErreur(ERREUR_ECRITURE_SD);
         return false;
     }
-    
     // Écriture de la ligne
     fichier.println(ligneDonnees);
     fichier.close();
-    
     Serial.println(F("Donnees ecrites avec succes."));
     return true;
 }
@@ -188,11 +180,8 @@ bool ecrireLigneDonnees(const char* ligneDonnees) {
 // Retour: true si OK, false si pleine
 // ============================================================================
 bool verifierEspaceSD() {
-    // Note: SD.h ne fournit pas de méthode native pour vérifier l'espace libre
-    // Pour l'instant on vérifie juste si on peut créer un fichier test
-    
-    File testFile = SD.open("test.tmp", FILE_WRITE);
-    if (!testFile) {
+    SdFile testFile;
+    if (!testFile.open("test.tmp", O_RDWR | O_CREAT | O_AT_END)) {
         definirErreur(ERREUR_SD_PLEINE);
         return false;
     }
