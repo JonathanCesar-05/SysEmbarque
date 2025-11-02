@@ -58,7 +58,7 @@ void couleurLed(uint8_t modeActuel) {
             break;
 
         case MODE_MAINTENANCE:
-            allumerCouleur(255, 0, 0);  // Rouge
+            allumerCouleur(255, 165, 0);  // Orange 
             break;
 
         default:
