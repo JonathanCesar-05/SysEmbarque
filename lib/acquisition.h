@@ -24,3 +24,6 @@ typedef struct {
 } CapteurData;
 
 void acquisition(CapteurData *data);
+void acquisitionSansGPS(CapteurData *data);
+void afficherDonneesSerial(const CapteurData *data);
+void enregistrerMesureSD(const CapteurData *data);

@@ -13,3 +13,9 @@ volatile bool changementFaitVert = false;
 volatile bool appuiRougeEnCours = false;
 volatile unsigned long tpsAppuiRouge = 0;
 volatile bool changementFaitRouge = false;
+
+void isrVert();
+void isrRouge();
+void initGestionMode();
+void gestionModes();
+void forcerConfig();
