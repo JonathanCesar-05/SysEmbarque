@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <DS1307.h>
 
-DS1307 clock;
+extern DS1307 clock;
 
 void init_clock();
 void printTime();

@@ -9,9 +9,9 @@
 #define GPS_SERIAL_TX    3
 
 // Capteurs principaux (exemple BME280)
-Adafruit_BME280 bme(PRESSURE_ADDR);
+extern Adafruit_BME280 bme;
 // GPS via SoftwareSerial
-SoftwareSerial gpsSerial(GPS_SERIAL_RX, GPS_SERIAL_TX);
+extern SoftwareSerial gpsSerial;
 
 typedef struct {
     int16_t temp;

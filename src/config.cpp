@@ -20,19 +20,6 @@ void reset_parameters(config_s cfg) {
   cfg.PRESSURE_MAX = 1030;
 }
 
-void config() {
-  Serial.println("Mode Configuration");
-  couleurLed(MODE_CONFIGURATION);
-  lastActivity = millis();
-  while (millis() - lastActivity < CONFIG_TIMEOUT_MS) {
-    if (Serial.available() > 0) {
-        String input = Serial.readStringUntil('\n');
-        SerialInput(input, cfg);
-        lastActivity = millis();
-    }
-  }
-}
-
 void SerialInput(String input, config_s cfg) {
   input.trim(); // Remove spaces or backline
   if (input.startsWith("LOG_INTERVAL=")) {
@@ -89,3 +76,15 @@ void SerialInput(String input, config_s cfg) {
   }
 }
 
+void config() {
+  Serial.println("Mode Configuration");
+  couleurLed(MODE_CONFIGURATION);
+  lastActivity = millis();
+  while (millis() - lastActivity < CONFIG_TIMEOUT_MS) {
+    if (Serial.available() > 0) {
+        String input = Serial.readStringUntil('\n');
+        SerialInput(input, cfg);
+        lastActivity = millis();
+    }
+  }
+}

@@ -6,6 +6,23 @@
 #include "../lib/clock.h"
 #include "../lib/gestionErreur.h"
 
+volatile int modes[2];
+volatile bool appuiVertEnCours = false;
+volatile unsigned long tpsAppuiVert = 0;
+volatile bool changementFaitVert = false;
+volatile bool appuiRougeEnCours = false;
+volatile unsigned long tpsAppuiRouge = 0;
+volatile bool changementFaitRouge = false;
+
+Adafruit_BME280 bme(PRESSURE_ADDR);
+SoftwareSerial gpsSerial(GPS_SERIAL_RX, GPS_SERIAL_TX);
+
+DS1307 clock;
+
+config_t cfg;
+
+unsigned long lastActivity = 0;
+
 CapteurData mesure;
 unsigned long lastAcq = 0;
 unsigned long interval = 0;

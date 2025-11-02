@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 typedef struct config_s {
-  int LOG_INTERVAL = 600000;
+  unsigned long LOG_INTERVAL = 600000;
   int FILE_MAX_SIZE = 4096;
   int TIMEOUT = 30;
   int LUMIN = 1;
@@ -19,11 +19,11 @@ typedef struct config_s {
   int PRESSURE_MAX = 1030;
 } config_t;
 
-config_t cfg;
+extern config_t cfg;
 
-unsigned long lastActivity = 0;
+extern unsigned long lastActivity;
 const unsigned long CONFIG_TIMEOUT_MS = 1800000; // 30 minutes
 
 void reset_parameters(config_s cfg);
-void serial_input(String input, config_s cfg);
+void SerialInput(String input, config_s cfg);
 void config();

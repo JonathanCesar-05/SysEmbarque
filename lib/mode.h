@@ -5,14 +5,12 @@
 #define BTN_ROUGE 3
 
 extern volatile int modes[2]; // [courant, precedent]
-
-volatile bool appuiVertEnCours = false;
-volatile unsigned long tpsAppuiVert = 0;
-volatile bool changementFaitVert = false;
-
-volatile bool appuiRougeEnCours = false;
-volatile unsigned long tpsAppuiRouge = 0;
-volatile bool changementFaitRouge = false;
+extern volatile bool appuiVertEnCours;
+extern volatile unsigned long tpsAppuiVert;
+extern volatile bool changementFaitVert;
+extern volatile bool appuiRougeEnCours;
+extern volatile unsigned long tpsAppuiRouge;
+extern volatile bool changementFaitRouge;
 
 void isrVert();
 void isrRouge();
